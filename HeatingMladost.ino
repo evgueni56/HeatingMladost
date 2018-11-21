@@ -41,9 +41,11 @@ Button SButton(SonoffButton);
 BlynkTimer SleepTimer;
 WidgetRTC rtc;
 
+#ifdef DEBUG
 WiFiServer TelnetServer(23);
 WiFiClient Telnet;
 WidgetTerminal terminal(V2);
+#endif
 
 #if defined(CLOUD)
 char auth[] = "2a0827e0a5f64341a286feff0df25d7d"; // Mladoct CLOUD server
@@ -67,7 +69,7 @@ bool relay_status = false, OnSwitch = false, wifi_cause = false;
 int WindowOpen = 0;
 bool EmergencyMode = false; // No Blynk connection or Button override
 bool led_state = false; // False to lit the led
-float req_temp = 20.0, low_temp = 17.0; // Default values if no Blynk connection
+float req_temp = 20.0, low_temp = 15.0; // Default values if no Blynk connection
 int blynk_relay_status = 0;
 long wait_time;
 long button_timeout;
