@@ -10,28 +10,25 @@ extern "C" {
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 #include <TimeLib.h>
-#include <EEPROM.h>
-#include <ESP8266WebServer.h>
 #include <BlynkSimpleEsp8266.h>
 #include <SimpleTimer.h>
 #include <WidgetRTC.h>
-#include <ESP8266WiFi.h>
-#include <ESP8266mDNS.h>
 #include <ArduinoOTA.h>  
 #include <Button.h>
+//#include <ESP8266mDNS.h>
 
 //#define DEBUG
+#define CLOUD
 
-#define SonoffButton 0
-#define LedTick 0
+constexpr auto SonoffButton = 0;
 
 // Data wire is plugged into port 2
-#define ONE_WIRE_BUS 14
+constexpr auto ONE_WIRE_BUS = 14;
 
 // Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
 OneWire oneWire(ONE_WIRE_BUS);
 
-// Pass our oneWire reference to Dallas Temperature. 
+// Pass our oneWire reference to Dallas Temperature.... 
 DallasTemperature sensors(&oneWire);
 
 // arrays to hold device address
@@ -48,11 +45,13 @@ WiFiServer TelnetServer(23);
 WiFiClient Telnet;
 WidgetTerminal terminal(V2);
 
+#if defined(CLOUD)
+char auth[] = "2a0827e0a5f64341a286feff0df25d7d"; // Mladoct CLOUD server
+#else
+char auth[] = "63020a5eab8540feac7e3301667233bb"; // Mladost Local server
+#endif
 
-char auth[] = "63020a5eab8540feac7e3301667233bb"; // Authentication key Mladost
-												  //char auth[] = "39e78a2de5b64d8dbb362ecdfa6703e5"; // Authentication key Rasho
-
-const char t_ssdi[] = "ehome_2", t_pw[] = "ewgekrs61";
+const char t_ssdi[] = "ehome", t_pw[] = "ewgekrs61";
 
 const int Rellay = 12;
 const int Led = 13;
@@ -60,13 +59,14 @@ const int Led = 13;
 float tempC = 0, oldT = 0; // Avoid false Window open
 
 						   // Times for the schedule in soconds of the day
-long OnTime[2] /*= 18*3600 +30*60 18:30*/,
-OffTime[2] /*= 23*3600 + 30*60 23:30*/, this_second;
+long OnTime[2] /*= 18*3600 +30*60 18:30*/;
+long OffTime[2] /*= 23*3600 + 30*60 23:30*/;
+long this_second;
 int blynk_timer, led_timer; // IDs of the Simple timers
 bool relay_status = false, OnSwitch = false, wifi_cause = false;
 int WindowOpen = 0;
 bool EmergencyMode = false; // No Blynk connection or Button override
-bool led_state = true; // False to lit the led
+bool led_state = false; // False to lit the led
 float req_temp = 20.0, low_temp = 17.0; // Default values if no Blynk connection
 int blynk_relay_status = 0;
 long wait_time;
@@ -76,6 +76,7 @@ bool manual_mode = false;
 
 void setup()
 {
+//	Serial.begin(74880);
 	Wire.begin();
 	SetupTemeratureSensor();
 	pinMode(Rellay, OUTPUT);
@@ -84,7 +85,8 @@ void setup()
 	digitalWrite(Rellay, 0);
 	SButton.begin();
 	WindowOpen = 0;
-
+	WiFi.mode(WIFI_STA);
+	WiFi.hostname("Heating");
 	WiFi.begin(t_ssdi, t_pw);
 	this_second = millis();
 	while (WiFi.status() != WL_CONNECTED)
@@ -104,11 +106,16 @@ void setup()
 		blynk_timer = SleepTimer.setInterval(10 * 1000, SleepTFunc);
 		return;
 	}
+#if defined(CLOUD)
+	Blynk.config(auth); // Mladost CLOD server
+#else
+	Blynk.config(auth, IPAddress(192, 168, 7, 130)); // Mladost local server
+#endif
 
-	Blynk.config(auth, IPAddress(192, 168, 7, 130));
 	setSyncInterval(60 * 60);
 	blynk_timer = SleepTimer.setInterval(10 * 1000, SleepTFunc);
 	ArduinoOTA.begin();
+	digitalWrite(Led, 1);
 
 #ifdef DEBUG
 	TelnetServer.begin();
@@ -139,17 +146,14 @@ void loop()
 			OnSwitch = false;
 			Blynk.virtualWrite(V13, OnSwitch);
 		}
-		return; // Ignor the rest of the loop
+		return; // Ignore the rest of the loop
 	}
 	if (SButton.pressed()) // Manually start heating at 22°
 	{
-		if (!manual_mode)
-		{
-			manual_mode = true;
-			OnSwitch = true;
-			Blynk.virtualWrite(V13, OnSwitch);
-			return;
-		}
+		manual_mode = true;
+		OnSwitch = true;
+		Blynk.virtualWrite(V13, OnSwitch);
+		return;
 	}
 
 	// Is it Emergency state?

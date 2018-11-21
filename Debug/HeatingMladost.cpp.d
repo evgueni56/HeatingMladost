@@ -74,9 +74,6 @@ C:\Users\evgueni\ nikolov\AppData\Local\Temp\VMBuilds\HeatingMladost\esp8266_gen
  C:\Users\evgueni\ nikolov\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\cores\esp8266/Udp.h \
  C:\Users\evgueni\ nikolov\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WiFi\src/include/slist.h \
  C:\User\OneDrive\Arduino\libraries\Time/TimeLib.h \
- C:\Users\evgueni\ nikolov\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\EEPROM/EEPROM.h \
- C:\Users\evgueni\ nikolov\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WebServer\src/ESP8266WebServer.h \
- C:\Users\evgueni\ nikolov\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266WebServer\src/detail/RequestHandler.h \
  C:\User\OneDrive\Arduino\libraries\Blynk\src/BlynkSimpleEsp8266.h \
  C:\User\OneDrive\Arduino\libraries\Blynk\src/BlynkApiArduino.h \
  C:\User\OneDrive\Arduino\libraries\Blynk\src/Blynk/BlynkApi.h \
@@ -106,6 +103,6 @@ C:\Users\evgueni\ nikolov\AppData\Local\Temp\VMBuilds\HeatingMladost\esp8266_gen
  C:\User\OneDrive\Arduino\libraries\SimpleTimer-master/SimpleTimer.h \
  C:\User\OneDrive\Arduino\libraries\Blynk\src/WidgetRTC.h \
  C:\User\OneDrive\Arduino\libraries\Blynk\src/Blynk/BlynkTemplates.h \
- C:\Users\evgueni\ nikolov\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266mDNS/ESP8266mDNS.h \
  C:\Users\evgueni\ nikolov\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ArduinoOTA/ArduinoOTA.h \
- C:\User\OneDrive\Arduino\libraries\Button/Button.h
+ C:\User\OneDrive\Arduino\libraries\Button/Button.h \
+ C:\Users\evgueni\ nikolov\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.3.0\libraries\ESP8266mDNS/ESP8266mDNS.h
