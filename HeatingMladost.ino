@@ -15,9 +15,9 @@ extern "C" {
 #include <WidgetRTC.h>
 #include <ArduinoOTA.h>  
 #include <Button.h>
-//#include <ESP8266mDNS.h>
+#include <ESP8266mDNS.h>
 
-//#define DEBUG
+#define DEBUG
 #define CLOUD
 
 constexpr auto SonoffButton = 0;
@@ -79,6 +79,7 @@ bool manual_mode = false;
 void setup()
 {
 //	Serial.begin(74880);
+	pinMode(14, INPUT_PULLUP);
 	Wire.begin();
 	SetupTemeratureSensor();
 	pinMode(Rellay, OUTPUT);
@@ -117,6 +118,7 @@ void setup()
 	setSyncInterval(60 * 60);
 	blynk_timer = SleepTimer.setInterval(10 * 1000, SleepTFunc);
 	ArduinoOTA.begin();
+	MDNS.begin("Heating");
 	digitalWrite(Led, 1);
 
 #ifdef DEBUG
@@ -187,10 +189,10 @@ void SetupTemeratureSensor()
 	sensors.setResolution(insideThermometer, 12);
 }
 
-BLYNK_WRITE(V10) // Temperature
+/*BLYNK_WRITE(V10) // Temperature
 {
 	low_temp = param.asFloat();
-}
+}*/
 
 BLYNK_WRITE(V11) // Temperature
 {
@@ -222,13 +224,18 @@ BLYNK_CONNECTED()
 
 void SleepTFunc()
 {
-#ifdef DEBUG
-	Telnet.println(tempC);
-#endif
 	oldT = tempC;
 	sensors.requestTemperatures();
-	tempC = sensors.getTempCByIndex(0);
-	tempC = floor(tempC * 10 + 0.5) / 10 - 3, 2; //Temperature correction
+	unsigned long timelatch = millis();
+	while (millis() - timelatch < 1000) // Sensor needs 750us to convert the temp
+		yield();
+	tempC = sensors.getTempCByIndex(0) - 2.0;
+	tempC = floor(tempC*10.0 + 0.5) / 10.0;
+
+#ifdef DEBUG
+	Telnet.println(tempC);
+	terminal.println(tempC);
+#endif
 
 	if (!Blynk.connected()) // Not yet connected to server
 	{
@@ -248,11 +255,10 @@ void led_blink(void)
 
 void HandleEmergency()
 {
-	if (HandleWindow)
+	if (HandleWindow())
 		return;
 
 	HandleHeating(req_temp);
-	HandleHeating(low_temp);
 
 	// Retry WiFi
 	WiFi.begin(t_ssdi, t_pw);
@@ -270,6 +276,9 @@ void HandleEmergency()
 	if (!wifi_cause) // Connection restored
 	{
 		EmergencyMode = false;
+		SleepTimer.disable(led_timer);
+		led_state = true;
+		digitalWrite(Led, led_state);
 		return;
 	}
 
@@ -300,11 +309,20 @@ bool CheckTime(long OnTime, long OffTime)
 
 bool HandleWindow()
 {
+	float riseTemp;
 	if (WindowOpen == 1) // Wait 3 min after the window was closed
 		if (millis() - wait_time > 180000L)
 		{
-			WindowOpen = 0;
-			return false;
+			if (tempC - riseTemp >= 1.0) // Avoid false positive temp rise
+			{
+				WindowOpen = 0;
+				return false;
+			}
+			else
+			{
+				WindowOpen = 2;
+				return true;
+			}
 		}
 		else
 			return true;
@@ -315,6 +333,7 @@ bool HandleWindow()
 		{
 			wait_time = millis();
 			WindowOpen = 1;
+			riseTemp = tempC;
 		}
 		return true;
 	}
