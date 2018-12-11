@@ -248,7 +248,7 @@ void led_blink(void)
 
 void HandleEmergency()
 {
-	if (HandleWindow)
+	if (HandleWindow())
 		return;
 
 	HandleHeating(req_temp);
