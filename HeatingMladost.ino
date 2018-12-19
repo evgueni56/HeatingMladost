@@ -53,8 +53,6 @@ char auth[] = "2a0827e0a5f64341a286feff0df25d7d"; // Mladoct CLOUD server
 char auth[] = "63020a5eab8540feac7e3301667233bb"; // Mladost Local server
 #endif
 
-const char t_ssdi[] = "ehome", t_pw[] = "ewgekrs61";
-
 const int Rellay = 12;
 const int Led = 13;
 
@@ -141,7 +139,7 @@ void loop()
 #endif
 	if (manual_mode) // Set by a button press
 	{
-		HandleHeating(22.0); // Yes, start unconditional heating to 22°
+		HandleHeating(22.0); // Yes, start unconditional heating to 22Â°
 		if (SButton.pressed()) // Press button again to stop it
 		{
 			manual_mode = false;
@@ -150,7 +148,7 @@ void loop()
 		}
 		return; // Ignore the rest of the loop
 	}
-	if (SButton.pressed()) // Manually start heating at 22°
+	if (SButton.pressed()) // Manually start heating at 22Â°
 	{
 		manual_mode = true;
 		OnSwitch = true;
